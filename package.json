@@ -1,0 +1,42 @@
+{
+  "name": "mr-kaine-admin-bot",
+  "version": "0.1.0",
+  "description": "Telegram admin/moderation bot with Zenon Network integration",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@grammyjs/auto-retry": "^2.0.2",
+    "@grammyjs/conversations": "^1.2.0",
+    "@grammyjs/parse-mode": "^1.10.0",
+    "@prisma/client": "^5.14.0",
+    "grammy": "^1.21.1",
+    "ioredis": "^5.4.1",
+    "pino": "^9.1.0",
+    "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/node": "^20.14.0",
+    "eslint": "^9.4.0",
+    "pino-pretty": "^11.2.0",
+    "prisma": "^5.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,521 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// CHAT & USER MANAGEMENT
+// ============================================================
+
+model Chat {
+  id        BigInt  @id // Telegram chat ID
+  title     String?
+  chatType  String  @default("supergroup") @map("chat_type")
+  language  String  @default("en")
+
+  // Admin settings
+  anonAdmin           Boolean  @default(false) @map("anon_admin")
+  adminError          Boolean  @default(true) @map("admin_error")
+  adminCacheUpdatedAt DateTime? @map("admin_cache_updated_at")
+
+  // Warning settings
+  warnLimit Int        @default(3) @map("warn_limit")
+  warnMode  WarnAction @default(BAN) @map("warn_mode")
+  warnTime  Int?       @map("warn_time") // seconds, null = no expiry
+
+  // Antiflood settings
+  floodLimit     Int         @default(0) @map("flood_limit") // 0 = disabled
+  floodMode      FloodAction @default(MUTE) @map("flood_mode")
+  floodTimer     Int         @default(0) @map("flood_timer") // seconds window
+  floodClearAll  Boolean     @default(false) @map("flood_clear_all")
+
+  // Antiraid
+  antiraidEnabled    Boolean @default(false) @map("antiraid_enabled")
+  antiraidExpiresAt  DateTime? @map("antiraid_expires_at")
+  raidTime           Int     @default(21600) @map("raid_time") // 6h default
+  raidActionTime     Int     @default(3600) @map("raid_action_time") // 1h
+  autoAntiraidLimit  Int     @default(0) @map("auto_antiraid_limit") // 0 = disabled
+
+  // CAPTCHA settings
+  captchaEnabled   Boolean     @default(false) @map("captcha_enabled")
+  captchaMode      CaptchaMode @default(BUTTON) @map("captcha_mode")
+  captchaText      String?     @map("captcha_text")
+  captchaKick      Boolean     @default(true) @map("captcha_kick")
+  captchaKickTime  Int         @default(120) @map("captcha_kick_time") // seconds
+  captchaMuteTime  Int         @default(0) @map("captcha_mute_time") // 0 = disabled
+  captchaRules     Boolean     @default(false) @map("captcha_rules")
+
+  // Greeting settings
+  welcomeEnabled       Boolean @default(true) @map("welcome_enabled")
+  welcomeText          String? @map("welcome_text")
+  welcomeMediaType     String? @map("welcome_media_type")
+  welcomeMediaId       String? @map("welcome_media_id")
+  goodbyeEnabled       Boolean @default(false) @map("goodbye_enabled")
+  goodbyeText          String? @map("goodbye_text")
+  goodbyeMediaType     String? @map("goodbye_media_type")
+  goodbyeMediaId       String? @map("goodbye_media_id")
+  cleanWelcome         Boolean @default(false) @map("clean_welcome")
+  lastWelcomeMessageId Int?    @map("last_welcome_message_id")
+
+  // Rules
+  rules         String?
+  privateRules  Boolean @default(true) @map("private_rules")
+  rulesButton   String? @map("rules_button")
+
+  // Notes
+  privateNotes Boolean @default(false) @map("private_notes")
+
+  // Log channel
+  logChannelId  BigInt?  @map("log_channel_id")
+  logCategories String[] @default([]) @map("log_categories")
+
+  // Pins
+  antiChannelPin Boolean @default(false) @map("anti_channel_pin")
+  cleanLinked    Boolean @default(false) @map("clean_linked")
+
+  // Reports
+  reportsEnabled Boolean @default(true) @map("reports_enabled")
+
+  // Cleaning
+  cleanCommands String[] @default([]) @map("clean_commands")
+  cleanMsgTypes String[] @default([]) @map("clean_msg_types")
+  cleanService  String[] @default([]) @map("clean_service")
+
+  // Silent actions
+  silentActions Boolean @default(false) @map("silent_actions")
+
+  // Federation
+  quietFed     Boolean @default(false) @map("quiet_fed")
+  federationId String? @map("federation_id")
+  federation   Federation? @relation(fields: [federationId], references: [id])
+
+  // Blocklist defaults
+  blocklistMode   BlocklistAction @default(DELETE) @map("blocklist_mode")
+  blocklistDelete Boolean         @default(true) @map("blocklist_delete")
+  blocklistReason String?         @map("blocklist_reason")
+
+  // Zenon integration
+  zenonGatingEnabled  Boolean @default(false) @map("zenon_gating_enabled")
+  zenonGatingToken    String? @map("zenon_gating_token")
+  zenonGatingMinAmount String? @map("zenon_gating_min_amount")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  admins           ChatAdmin[]
+  warnings         Warning[]
+  notes            Note[]
+  filters          Filter[]
+  blocklists       Blocklist[]
+  locks            ChatLock[]
+  disabledCommands DisabledCommand[]
+  approvedUsers    ApprovedUser[]
+  connections      Connection[]
+  logEntries       LogEntry[]
+  captchaPending   CaptchaPending[]
+  allowlistEntries AllowlistEntry[]
+  scheduledActions ScheduledAction[]
+
+  @@map("chats")
+}
+
+model User {
+  id        BigInt  @id // Telegram user ID
+  username  String?
+  firstName String? @map("first_name")
+  lastName  String? @map("last_name")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+
+  // Zenon wallet
+  zenonAddress  String?  @map("zenon_address")
+  zenonVerified Boolean  @default(false) @map("zenon_verified")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  chatAdmins    ChatAdmin[]
+  warnings      Warning[]  @relation("WarnedUser")
+  warningsGiven Warning[]  @relation("WarnerUser")
+  approvals     ApprovedUser[]
+  connections   Connection[]
+  fedBans       FedBan[]   @relation("FedBannedUser")
+  fedBansGiven  FedBan[]   @relation("FedBanner")
+
+  @@map("users")
+}
+
+model ChatAdmin {
+  chatId      BigInt  @map("chat_id")
+  userId      BigInt  @map("user_id")
+  isAnonymous Boolean @default(false) @map("is_anonymous")
+  canPromote  Boolean @default(false) @map("can_promote")
+  canRestrict Boolean @default(false) @map("can_restrict")
+  canDelete   Boolean @default(false) @map("can_delete")
+  canPin      Boolean @default(false) @map("can_pin")
+  customTitle String? @map("custom_title")
+  cachedAt    DateTime @default(now()) @map("cached_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([userId])
+  @@map("chat_admins")
+}
+
+// ============================================================
+// MODERATION
+// ============================================================
+
+model Warning {
+  id       Int    @id @default(autoincrement())
+  chatId   BigInt @map("chat_id")
+  userId   BigInt @map("user_id")
+  warnerId BigInt @map("warner_id")
+  reason   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user   User @relation("WarnedUser", fields: [userId], references: [id], onDelete: Cascade)
+  warner User @relation("WarnerUser", fields: [warnerId], references: [id], onDelete: Cascade)
+
+  @@index([chatId, userId])
+  @@map("warnings")
+}
+
+model ApprovedUser {
+  chatId     BigInt   @map("chat_id")
+  userId     BigInt   @map("user_id")
+  reason     String?
+  approvedAt DateTime @default(now()) @map("approved_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@map("approved_users")
+}
+
+// ============================================================
+// ANTI-SPAM
+// ============================================================
+
+model ChatLock {
+  id        Int     @id @default(autoincrement())
+  chatId    BigInt  @map("chat_id")
+  lockType  String  @map("lock_type")
+  lockWarns Boolean @default(false) @map("lock_warns")
+  lockMode  String? @map("lock_mode") // custom action override
+  lockReason String? @map("lock_reason")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, lockType])
+  @@map("chat_locks")
+}
+
+model Blocklist {
+  id          Int                  @id @default(autoincrement())
+  chatId      BigInt               @map("chat_id")
+  trigger     String
+  triggerType BlocklistTriggerType @default(TEXT) @map("trigger_type")
+  mode        BlocklistAction?     // null = use chat default
+  reason      String?
+  createdAt   DateTime             @default(now()) @map("created_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@map("blocklists")
+}
+
+model AllowlistEntry {
+  id     Int    @id @default(autoincrement())
+  chatId BigInt @map("chat_id")
+  item   String
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, item])
+  @@map("allowlist_entries")
+}
+
+model CaptchaPending {
+  id        Int      @id @default(autoincrement())
+  chatId    BigInt   @map("chat_id")
+  userId    BigInt   @map("user_id")
+  messageId Int?     @map("message_id")
+  answer    String?
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@map("captcha_pending")
+}
+
+// ============================================================
+// CONTENT & FEATURES
+// ============================================================
+
+model Note {
+  id        Int     @id @default(autoincrement())
+  chatId    BigInt  @map("chat_id")
+  name      String
+  content   String
+  mediaType String? @map("media_type")
+  mediaId   String? @map("media_id")
+  buttons   Json?
+  isPrivate Boolean @default(false) @map("is_private")
+  isAdmin   Boolean @default(false) @map("is_admin")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, name])
+  @@map("notes")
+}
+
+model Filter {
+  id          Int               @id @default(autoincrement())
+  chatId      BigInt            @map("chat_id")
+  keyword     String
+  triggerType FilterTriggerType @default(CONTAINS) @map("trigger_type")
+  content     String
+  mediaType   String?           @map("media_type")
+  mediaId     String?           @map("media_id")
+  buttons     Json?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@map("filters")
+}
+
+model DisabledCommand {
+  id           Int     @id @default(autoincrement())
+  chatId       BigInt  @map("chat_id")
+  command      String
+  deleteMsg    Boolean @default(false) @map("delete_msg")
+  disableAdmin Boolean @default(false) @map("disable_admin")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, command])
+  @@map("disabled_commands")
+}
+
+model Connection {
+  id          Int      @id @default(autoincrement())
+  userId      BigInt   @map("user_id")
+  chatId      BigInt   @map("chat_id")
+  isActive    Boolean  @default(true) @map("is_active")
+  connectedAt DateTime @default(now()) @map("connected_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chatId])
+  @@index([userId, isActive])
+  @@map("connections")
+}
+
+// ============================================================
+// LOG CHANNEL
+// ============================================================
+
+model LogEntry {
+  id       Int    @id @default(autoincrement())
+  chatId   BigInt @map("chat_id")
+  category String
+  actorId  BigInt? @map("actor_id")
+  targetId BigInt? @map("target_id")
+  action   String
+  details  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId, createdAt])
+  @@index([chatId, category])
+  @@map("log_entries")
+}
+
+// ============================================================
+// FEDERATIONS
+// ============================================================
+
+model Federation {
+  id        String @id @default(uuid())
+  name      String
+  ownerId   BigInt @map("owner_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  logChannelId   BigInt?  @map("log_channel_id")
+  reasonRequired Boolean  @default(false) @map("reason_required")
+  notifyOnBan    Boolean  @default(true) @map("notify_on_ban")
+
+  chats         Chat[]
+  admins        FedAdmin[]
+  bans          FedBan[]
+  subscriptions FedSubscription[] @relation("SubscriberFed")
+  subscribedTo  FedSubscription[] @relation("SubscribedFed")
+
+  @@index([ownerId])
+  @@map("federations")
+}
+
+model FedAdmin {
+  federationId String @map("federation_id")
+  userId       BigInt @map("user_id")
+
+  federation Federation @relation(fields: [federationId], references: [id], onDelete: Cascade)
+
+  @@id([federationId, userId])
+  @@map("fed_admins")
+}
+
+model FedBan {
+  id           Int    @id @default(autoincrement())
+  federationId String @map("federation_id")
+  userId       BigInt @map("user_id")
+  bannerId     BigInt @map("banner_id")
+  reason       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  federation Federation @relation(fields: [federationId], references: [id], onDelete: Cascade)
+  user       User       @relation("FedBannedUser", fields: [userId], references: [id], onDelete: Cascade)
+  banner     User       @relation("FedBanner", fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@unique([federationId, userId])
+  @@index([userId])
+  @@map("fed_bans")
+}
+
+model FedSubscription {
+  subscriberId   String @map("subscriber_id")
+  subscribedToId String @map("subscribed_to_id")
+
+  subscriber   Federation @relation("SubscriberFed", fields: [subscriberId], references: [id], onDelete: Cascade)
+  subscribedTo Federation @relation("SubscribedFed", fields: [subscribedToId], references: [id], onDelete: Cascade)
+
+  @@id([subscriberId, subscribedToId])
+  @@map("fed_subscriptions")
+}
+
+// ============================================================
+// ZENON BLOCKCHAIN
+// ============================================================
+
+model ZenonWalletLink {
+  id          Int     @id @default(autoincrement())
+  userId      BigInt  @unique @map("user_id")
+  address     String  @unique
+  verified    Boolean @default(false)
+  verifyToken String? @map("verify_token")
+  linkedAt    DateTime @default(now()) @map("linked_at")
+
+  @@index([address])
+  @@map("zenon_wallet_links")
+}
+
+model ZenonSubscription {
+  id               Int     @id @default(autoincrement())
+  chatId           BigInt  @map("chat_id")
+  subscriptionType String  @map("subscription_type")
+  targetAddress    String? @map("target_address")
+  isActive         Boolean @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([chatId, subscriptionType, targetAddress])
+  @@map("zenon_subscriptions")
+}
+
+// ============================================================
+// SCHEDULED ACTIONS
+// ============================================================
+
+model ScheduledAction {
+  id         Int      @id @default(autoincrement())
+  chatId     BigInt   @map("chat_id")
+  userId     BigInt?  @map("user_id")
+  actionType String   @map("action_type") // unban, unmute, captcha_kick
+  executeAt  DateTime @map("execute_at")
+  metadata   Json?
+  completed  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([executeAt, completed])
+  @@index([chatId, userId, actionType])
+  @@map("scheduled_actions")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum WarnAction {
+  BAN
+  MUTE
+  KICK
+  TBAN
+  TMUTE
+}
+
+enum FloodAction {
+  BAN
+  MUTE
+  KICK
+  TBAN
+  TMUTE
+}
+
+enum CaptchaMode {
+  BUTTON
+  MATH
+  TEXT
+  CUSTOM
+}
+
+enum BlocklistTriggerType {
+  TEXT
+  STICKERPACK
+  FILE
+  FORWARD
+  INLINE
+  USERNAME
+  NAME
+  PREFIX
+  EXACT
+  LOOKALIKE
+}
+
+enum BlocklistAction {
+  DELETE
+  BAN
+  MUTE
+  KICK
+  WARN
+  TBAN
+  TMUTE
+}
+
+enum FilterTriggerType {
+  CONTAINS
+  PREFIX
+  EXACT
+  COMMAND
+}
