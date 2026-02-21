@@ -41,7 +41,7 @@ describe("constants", () => {
   });
 
   it("BOT_NAME and BOT_USERNAME are set", () => {
-    expect(BOT_NAME).toBe("Mr. Kaine");
-    expect(BOT_USERNAME).toBe("mr_kaine_admin_bot");
+    expect(BOT_NAME).toBe("Ms. Kaine");
+    expect(BOT_USERNAME).toBe("msKaine_bot");
   });
 });

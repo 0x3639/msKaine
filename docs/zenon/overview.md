@@ -1,6 +1,6 @@
 # Zenon Network Integration
 
-Mr. Kaine includes native integration with the [Zenon Network](https://zenon.network) blockchain, enabling wallet linking, on-chain queries, token gating, and more.
+Ms. Kaine includes native integration with the [Zenon Network](https://zenon.network) blockchain, enabling wallet linking, on-chain queries, token gating, and more.
 
 ## Requirements
 

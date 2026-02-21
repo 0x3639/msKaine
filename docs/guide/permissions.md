@@ -1,6 +1,6 @@
 # Permissions
 
-Mr. Kaine uses a layered permission system to control who can run which commands.
+Ms. Kaine uses a layered permission system to control who can run which commands.
 
 ## Permission Levels
 

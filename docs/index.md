@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: Mr. Kaine Bot
+  name: Ms. Kaine Bot
   text: Telegram Group Administration
   tagline: Full-featured moderation bot with Zenon Network blockchain integration
   actions:

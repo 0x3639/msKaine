@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Mr. Kaine Admin Bot is a Telegram group administration/moderation bot with Zenon Network blockchain integration. It replicates Miss Rose bot functionality using TypeScript and the grammY framework.
+Ms. Kaine Admin Bot is a Telegram group administration/moderation bot with Zenon Network blockchain integration. It replicates Miss Rose bot functionality using TypeScript and the grammY framework.
 
 ## Tech Stack
 

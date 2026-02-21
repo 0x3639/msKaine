@@ -1,4 +1,4 @@
-# Mr. Kaine Admin Bot - Roadmap
+# Ms. Kaine Admin Bot - Roadmap
 
 A comprehensive Telegram admin/moderation bot replicating all Miss Rose functionality, built with TypeScript and integrated with the Zenon Network via `znn-typescript-sdk`.
 

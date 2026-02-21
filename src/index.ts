@@ -67,7 +67,7 @@ function checkZenon(): boolean {
 
 async function main(): Promise<void> {
   const config = loadConfig();
-  logger.info({ env: config.NODE_ENV }, "Starting Mr. Kaine Admin Bot...");
+  logger.info({ env: config.NODE_ENV }, "Starting Ms. Kaine Admin Bot...");
 
   // Initialize database
   const db = getDatabase();

@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "Mr. Kaine Bot",
+  title: "Ms. Kaine Bot",
   description:
     "Telegram group administration bot with Zenon Network integration",
   themeConfig: {
@@ -52,7 +52,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/your-org/mr-kaine-admin-bot",
+        link: "https://github.com/your-org/ms-kaine-admin-bot",
       },
     ],
   },

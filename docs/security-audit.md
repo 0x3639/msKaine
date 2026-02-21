@@ -8,7 +8,7 @@
 
 ## Summary
 
-Comprehensive security audit of the Mr. Kaine Admin Bot codebase. Identified 10 vulnerabilities across input handling, authentication/authorization, secrets management, DoS vectors, and infrastructure.
+Comprehensive security audit of the Ms. Kaine Admin Bot codebase. Identified 10 vulnerabilities across input handling, authentication/authorization, secrets management, DoS vectors, and infrastructure.
 
 | # | Vulnerability | Severity | Status |
 |---|---|---|---|

@@ -2,7 +2,7 @@
 
 ## Adding the Bot
 
-1. Search for **@MrKaineBot** on Telegram (or your self-hosted instance)
+1. Search for **@msKaine_bot** on Telegram (or your self-hosted instance)
 2. Click **Add to Group** and select your group
 3. Promote the bot to **admin** with these permissions:
    - Delete messages

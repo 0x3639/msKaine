@@ -62,7 +62,7 @@ function generateCategoryPage(
 
 function generateIndex(): string {
   let md = `# Command Reference\n\n`;
-  md += `Mr. Kaine has **${COMMAND_REGISTRY.length} commands** across ${Object.keys(CATEGORIES).length} categories.\n\n`;
+  md += `Ms. Kaine has **${COMMAND_REGISTRY.length} commands** across ${Object.keys(CATEGORIES).length} categories.\n\n`;
   md += `Use \`/help\` in Telegram for interactive command browsing, or explore the categories below.\n\n`;
 
   for (const [key, meta] of Object.entries(CATEGORIES)) {

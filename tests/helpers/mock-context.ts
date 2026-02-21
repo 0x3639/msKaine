@@ -31,8 +31,8 @@ const DEFAULT_CHAT: Chat.SupergroupChat = {
 const DEFAULT_BOT_INFO: User = {
   id: 999,
   is_bot: true,
-  first_name: "MrKaine",
-  username: "MrKaineBot",
+  first_name: "MsKaine",
+  username: "msKaine_bot",
 };
 
 function makeDefaultChatModel(overrides?: Partial<PrismaChat>): PrismaChat {

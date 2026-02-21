@@ -1,4 +1,4 @@
-# Mr. Kaine Admin Bot — Audit Findings
+# Ms. Kaine Admin Bot — Audit Findings
 
 Audit performed against `roadmap.md` (Phases 0–5, ~243 commands).
 

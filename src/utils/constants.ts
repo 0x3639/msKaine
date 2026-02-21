@@ -65,5 +65,5 @@ export const CLEAN_SERVICE_TYPES = [
   "videochat",
 ] as const;
 
-export const BOT_NAME = "Mr. Kaine";
-export const BOT_USERNAME = "mr_kaine_admin_bot";
+export const BOT_NAME = "Ms. Kaine";
+export const BOT_USERNAME = "msKaine_bot";

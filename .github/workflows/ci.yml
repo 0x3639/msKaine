@@ -114,4 +114,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t mr-kaine-admin-bot .
+        run: docker build -t ms-kaine-admin-bot .

@@ -1,8 +1,8 @@
-# Mr. Kaine Admin Bot
+# Ms. Kaine Admin Bot
 
 A full-featured Telegram group administration and moderation bot with Zenon Network blockchain integration. Built with TypeScript and the [grammY](https://grammy.dev) framework.
 
-Inspired by [Miss Rose](https://missrose.org), Mr. Kaine provides comprehensive group management — bans, warnings, CAPTCHA verification, content filtering, federations, and more — plus native Zenon Network features like wallet linking, token gating, and on-chain queries.
+Inspired by [Miss Rose](https://missrose.org), Ms. Kaine provides comprehensive group management — bans, warnings, CAPTCHA verification, content filtering, federations, and more — plus native Zenon Network features like wallet linking, token gating, and on-chain queries.
 
 ## Features
 
@@ -79,8 +79,8 @@ Inspired by [Miss Rose](https://missrose.org), Mr. Kaine provides comprehensive 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/mr-kaine-admin-bot.git
-cd mr-kaine-admin-bot
+git clone https://github.com/your-org/ms-kaine-admin-bot.git
+cd ms-kaine-admin-bot
 
 # Configure environment
 cp .env.example .env
@@ -310,7 +310,7 @@ Core singletons (`src/core/`) are lazy-initialized: `getDatabase()`, `getRedis()
 ### Building
 
 ```bash
-docker build -t mr-kaine-admin-bot .
+docker build -t ms-kaine-admin-bot .
 ```
 
 The Dockerfile uses a multi-stage build: dependency install, TypeScript compilation with Prisma generation, and a slim production image running as non-root (`USER node`).
