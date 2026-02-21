@@ -51,7 +51,16 @@ composer.command("purge", async (ctx) => {
   const fromId = ctx.message.reply_to_message.message_id;
   const toId = ctx.message.message_id;
   const countArg = parseInt(ctx.match as string, 10);
-  const maxCount = !isNaN(countArg) && countArg > 0 ? countArg : toId - fromId + 1;
+  const PURGE_HARD_CAP = 200;
+  const range = toId - fromId + 1;
+  const maxCount = !isNaN(countArg) && countArg > 0
+    ? Math.min(countArg, PURGE_HARD_CAP)
+    : Math.min(range, PURGE_HARD_CAP);
+
+  if (range > PURGE_HARD_CAP && (isNaN(countArg) || countArg <= 0)) {
+    await ctx.reply(`Range spans ${range} messages. Specify a count (max ${PURGE_HARD_CAP}): /purge ${PURGE_HARD_CAP}`);
+    return;
+  }
 
   let deleted = 0;
   const messageIds: number[] = [];
@@ -119,7 +128,16 @@ composer.command("spurge", async (ctx) => {
   const fromId = ctx.message.reply_to_message.message_id;
   const toId = ctx.message.message_id;
   const countArg = parseInt(ctx.match as string, 10);
-  const maxCount = !isNaN(countArg) && countArg > 0 ? countArg : toId - fromId + 1;
+  const PURGE_HARD_CAP = 200;
+  const range = toId - fromId + 1;
+  const maxCount = !isNaN(countArg) && countArg > 0
+    ? Math.min(countArg, PURGE_HARD_CAP)
+    : Math.min(range, PURGE_HARD_CAP);
+
+  if (range > PURGE_HARD_CAP && (isNaN(countArg) || countArg <= 0)) {
+    await ctx.reply(`Range spans ${range} messages. Specify a count (max ${PURGE_HARD_CAP}): /spurge ${PURGE_HARD_CAP}`);
+    return;
+  }
 
   const messageIds: number[] = [];
   let deleted = 0;
@@ -190,6 +208,13 @@ composer.command("purgeto", async (ctx) => {
 
   const start = Math.min(fromId, toId);
   const end = Math.max(fromId, toId);
+  const PURGE_HARD_CAP = 200;
+  const range = end - start + 1;
+
+  if (range > PURGE_HARD_CAP) {
+    await ctx.reply(`Range spans ${range} messages, exceeding the ${PURGE_HARD_CAP} message limit. Use /purge with a count instead.`);
+    return;
+  }
 
   const messageIds: number[] = [];
   let deleted = 0;

@@ -22,16 +22,24 @@ export class ZenonClient {
       await this.zenon.initialize(httpUrl);
 
       if (mnemonic) {
-        const { KeyStore } = await import("znn-typescript-sdk");
-        const keyStore = KeyStore.fromMnemonic(mnemonic);
-        this.keyPair = keyStore.getKeyPair(0);
-        log.info("Zenon wallet loaded from mnemonic");
+        try {
+          const { KeyStore } = await import("znn-typescript-sdk");
+          const keyStore = KeyStore.fromMnemonic(mnemonic);
+          this.keyPair = keyStore.getKeyPair(0);
+          log.info("Zenon wallet loaded from mnemonic");
+        } catch (walletErr) {
+          // Only log the message, never the full error object — it may contain the mnemonic
+          const msg = walletErr instanceof Error ? walletErr.message : "unknown error";
+          log.error("Failed to load Zenon wallet: %s", msg);
+        }
       }
 
       this._initialized = true;
       log.info({ url: httpUrl }, "Zenon SDK initialized");
     } catch (err) {
-      log.error({ err }, "Failed to initialize Zenon SDK");
+      // Only log the message to avoid leaking sensitive data in stack traces
+      const msg = err instanceof Error ? err.message : "unknown error";
+      log.error("Failed to initialize Zenon SDK: %s", msg);
       // Don't throw - the bot should still work without Zenon
     }
   }

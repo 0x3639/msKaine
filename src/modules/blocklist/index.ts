@@ -91,6 +91,7 @@ composer.command("addblocklist", async (ctx) => {
   }
   const withoutMode = raw.replace(/\{[^}]*\}/, "").trim();
 
+  const TRIGGER_MAX_LENGTH = 100;
   const db = getDatabase();
   const chatId = BigInt(ctx.chat!.id);
 
@@ -106,6 +107,10 @@ composer.command("addblocklist", async (ctx) => {
     let count = 0;
     for (const trigger of triggers) {
       const { type, value } = parseTriggerType(trigger);
+      if (value.length > TRIGGER_MAX_LENGTH) {
+        await ctx.reply(`Trigger too long (max ${TRIGGER_MAX_LENGTH} chars): ${value.slice(0, 20)}...`);
+        return;
+      }
       await db.blocklist.create({
         data: { chatId, trigger: value.toLowerCase(), triggerType: type, reason, mode: mode as any },
       });
@@ -131,6 +136,11 @@ composer.command("addblocklist", async (ctx) => {
   }
 
   const { type, value } = parseTriggerType(trigger);
+
+  if (value.length > TRIGGER_MAX_LENGTH) {
+    await ctx.reply(`Trigger too long (max ${TRIGGER_MAX_LENGTH} chars).`);
+    return;
+  }
 
   await db.blocklist.create({
     data: { chatId, trigger: value.toLowerCase(), triggerType: type, reason, mode: mode as any },
@@ -292,9 +302,7 @@ composer.on("message", async (ctx, next) => {
         break;
       case "FILE":
         if (fileName) {
-          // Support glob-like patterns: *.pdf
-          const pattern = trigger.replace(/\*/g, ".*");
-          matched = new RegExp(`^${pattern}$`, "i").test(fileName);
+          matched = safeGlobTest(trigger, fileName);
         }
         break;
       case "FORWARD":
@@ -305,14 +313,12 @@ composer.on("message", async (ctx, next) => {
         break;
       case "USERNAME":
         if (senderUsername) {
-          const pattern = trigger.replace(/\*/g, ".*");
-          matched = new RegExp(`^${pattern}$`, "i").test(senderUsername);
+          matched = safeGlobTest(trigger, senderUsername);
         }
         break;
       case "NAME":
         if (senderName) {
-          const pattern = trigger.replace(/\*/g, ".*");
-          matched = new RegExp(`^${pattern}$`, "i").test(senderName);
+          matched = safeGlobTest(trigger, senderName);
         }
         break;
       case "PREFIX":
@@ -383,9 +389,28 @@ async function applyBlocklistAction(ctx: BotContext, action: string, reason: str
 }
 
 /**
- * Simple lookalike/homoglyph detection.
+ * Safe glob-to-regex test. Escapes special regex chars except *, converts * to
+ * a lazy bounded pattern, and wraps execution in try/catch.
+ */
+function safeGlobTest(trigger: string, input: string): boolean {
+  if (input.length > 1000) return false;
+  try {
+    // Escape all regex special chars except *, then convert * to lazy wildcard
+    const escaped = trigger.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = escaped.replace(/\*/g, ".*?");
+    return new RegExp(`^${pattern}$`, "i").test(input);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Simple lookalike/homoglyph detection with safety bounds.
  */
 function containsLookalike(text: string, target: string): boolean {
+  // Bound input length to prevent ReDoS on long messages
+  if (text.length > 1000 || target.length > 100) return false;
+
   const homoglyphs: Record<string, string> = {
     a: "[aаα@àáâãäå]", b: "[bвьъ]", c: "[cсçć]", d: "[dԁ]",
     e: "[eеéèêë]", g: "[gɡ]", h: "[hнһ]", i: "[iіíîïì1l!|]",
@@ -400,7 +425,11 @@ function containsLookalike(text: string, target: string): boolean {
     pattern += homoglyphs[char] ?? char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
-  return new RegExp(pattern, "i").test(text);
+  try {
+    return new RegExp(pattern, "i").test(text);
+  } catch {
+    return false;
+  }
 }
 
 export default composer;

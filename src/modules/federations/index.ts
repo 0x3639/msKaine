@@ -799,28 +799,63 @@ composer.command("importfbans", async (ctx) => {
     return;
   }
 
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_IMPORT_BANS = 10_000;
+  const doc = ctx.message.reply_to_message.document;
+
+  if (doc.file_size && doc.file_size > MAX_FILE_SIZE) {
+    await ctx.reply(`File too large (${(doc.file_size / 1024 / 1024).toFixed(1)}MB). Maximum is 5MB.`);
+    return;
+  }
+
   try {
-    const file = await ctx.api.getFile(ctx.message.reply_to_message.document.file_id);
+    const file = await ctx.api.getFile(doc.file_id);
     const url = `https://api.telegram.org/file/bot${ctx.api.token}/${file.file_path}`;
     const response = await fetch(url);
     const text = await response.text();
-    const bans: Array<{ user_id: number; reason?: string }> = JSON.parse(text);
+
+    if (text.length > MAX_FILE_SIZE) {
+      await ctx.reply("File content too large. Maximum is 5MB.");
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      await ctx.reply("Invalid JSON file. Expected an array of objects.");
+      return;
+    }
+
+    if (!Array.isArray(parsed)) {
+      await ctx.reply("Invalid format. Expected a JSON array.");
+      return;
+    }
+
+    const bans = parsed as Array<Record<string, unknown>>;
+
+    if (bans.length > MAX_IMPORT_BANS) {
+      await ctx.reply(`Too many entries (${bans.length}). Maximum is ${MAX_IMPORT_BANS.toLocaleString()}.`);
+      return;
+    }
 
     const db = getDatabase();
     let imported = 0;
 
     for (const ban of bans) {
-      if (!ban.user_id) continue;
+      const userId = Number(ban.user_id);
+      if (!userId || !Number.isFinite(userId) || userId <= 0) continue;
+      const reason = typeof ban.reason === "string" ? ban.reason.slice(0, 500) : undefined;
       try {
         await db.fedBan.upsert({
-          where: { federationId_userId: { federationId: chatFed.id, userId: BigInt(ban.user_id) } },
+          where: { federationId_userId: { federationId: chatFed.id, userId: BigInt(userId) } },
           create: {
             federationId: chatFed.id,
-            userId: BigInt(ban.user_id),
+            userId: BigInt(userId),
             bannerId: BigInt(ctx.from!.id),
-            reason: ban.reason,
+            reason,
           },
-          update: { reason: ban.reason },
+          update: { reason },
         });
         imported++;
       } catch { /* skip invalid entries */ }
