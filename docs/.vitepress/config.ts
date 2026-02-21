@@ -52,7 +52,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/your-org/ms-kaine-admin-bot",
+        link: "https://github.com/0x3639/msKaine",
       },
     ],
   },

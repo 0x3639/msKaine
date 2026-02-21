@@ -79,8 +79,8 @@ Inspired by [Miss Rose](https://missrose.org), Ms. Kaine provides comprehensive 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/ms-kaine-admin-bot.git
-cd ms-kaine-admin-bot
+git clone https://github.com/0x3639/msKaine.git
+cd msKaine
 
 # Configure environment
 cp .env.example .env
