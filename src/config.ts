@@ -9,6 +9,8 @@ const envSchema = z.object({
   ZENON_NODE_WS: z.string().default("wss://node.zenonhub.io:35998"),
   ZENON_MNEMONIC: z.string().optional(),
 
+  HEALTH_PORT: z.coerce.number().int().min(0).default(0),
+
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
     .default("info"),

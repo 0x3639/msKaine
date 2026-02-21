@@ -12,8 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "lint": "eslint src/",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --exclude tests/integration/",
+    "test:watch": "vitest --exclude tests/integration/",
+    "test:integration": "vitest run tests/integration/"
   },
   "engines": {
     "node": ">=20.0.0"
