@@ -1,0 +1,3 @@
+# Generated from src/docs/registry.ts — do not edit manually
+# Regenerate with: npm run docs:generate
+*.md

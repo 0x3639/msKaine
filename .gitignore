@@ -3,3 +3,8 @@ dist/
 .env
 *.log
 .DS_Store
+
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/node_modules/

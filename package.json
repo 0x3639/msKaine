@@ -14,7 +14,10 @@
     "lint": "eslint src/",
     "test": "vitest run --exclude tests/integration/",
     "test:watch": "vitest --exclude tests/integration/",
-    "test:integration": "vitest run tests/integration/"
+    "test:integration": "vitest run tests/integration/",
+    "docs:generate": "tsx scripts/generate-docs.ts",
+    "docs:dev": "npm run docs:generate && cd docs && npm run dev",
+    "docs:build": "npm run docs:generate && cd docs && npm run build"
   },
   "engines": {
     "node": ">=20.0.0"
