@@ -19,6 +19,11 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = join(__dirname, "../docs/commands");
 
+/** Escape angle brackets so VitePress/Vue doesn't treat them as HTML tags. */
+function esc(text: string): string {
+  return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 mkdirSync(DOCS_DIR, { recursive: true });
 
 function generateCategoryPage(
@@ -32,16 +37,16 @@ function generateCategoryPage(
 
   for (const cmd of commands) {
     md += `## /${cmd.name}\n\n`;
-    md += `${cmd.longDescription ?? cmd.description}\n\n`;
+    md += `${esc(cmd.longDescription ?? cmd.description)}\n\n`;
     md += `| | |\n|---|---|\n`;
     md += `| **Permission** | ${formatPermission(cmd.permission)} |\n`;
-    md += `| **Usage** | \`${cmd.usage}\` |\n`;
+    md += `| **Usage** | \`${esc(cmd.usage)}\` |\n`;
     md += `| **Module** | ${cmd.module} |\n\n`;
 
     if (cmd.examples.length > 0) {
       md += `**Examples:**\n\n`;
       for (const ex of cmd.examples) {
-        md += `- \`${ex}\`\n`;
+        md += `- \`${esc(ex)}\`\n`;
       }
       md += "\n";
     }
@@ -49,7 +54,7 @@ function generateCategoryPage(
     if (cmd.notes && cmd.notes.length > 0) {
       md += `::: tip\n`;
       for (const note of cmd.notes) {
-        md += `${note}\n`;
+        md += `${esc(note)}\n`;
       }
       md += `:::\n\n`;
     }
